@@ -6,7 +6,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="AutoMapper" Version="13.0.1" NoWarn="NU1903"/>
+    <PackageReference Include="AutoMapper" Version="13.0.1" NoWarn="NU1903" />
   </ItemGroup>
 
   <PropertyGroup>
