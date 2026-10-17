@@ -4,37 +4,36 @@ using GolBet.Services.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 
-
 namespace GolBet.Web.Controllers;
 
 public class MatchesController : Controller
 {
     private readonly IMatchService _matchService;
+    private readonly ITeamService _teamService;
 
-    public MatchesController(IMatchService matchService)
-        => _matchService = matchService;
+    public MatchesController(IMatchService matchService, ITeamService teamService)
+    {
+        _matchService = matchService;
+        _teamService = teamService;
+    }
 
-    // GET /Matches            -> all matches
-    // GET /Matches?status=Scheduled -> filtered board
-    public async Task<IActionResult> Index(MatchStatus? status)
+    public async Task<IActionResult> Index(MatchStatus? status, string? search)
     {
         ViewBag.CurrentStatus = status;
-        var board = await _matchService.GetBoardAsync(status);
+        ViewBag.CurrentSearch = search;
+
+        var board = await _matchService.GetBoardAsync(status, search);
         return View(board);
     }
 
-    // GET /Matches/Detail/3
     public async Task<IActionResult> Detail(int id)
     {
         var match = await _matchService.GetDetailAsync(id);
-        if (match is null) return NotFound();   // HTTP 404
+        if (match is null) return NotFound();
 
         return View(match);
     }
 
-    private readonly ITeamService _teamService;
-
-    // GET /Matches/Create
     public async Task<IActionResult> Create()
     {
         await LoadTeamsAsync();
@@ -56,7 +55,7 @@ public class MatchesController : Controller
             TempData["Success"] = "Partido creado correctamente.";
             return RedirectToAction(nameof(Index));
         }
-        catch (InvalidOperationException ex)      // business rule violated
+        catch (InvalidOperationException ex) 
         {
             ModelState.AddModelError(string.Empty, ex.Message);
             await LoadTeamsAsync();
@@ -64,17 +63,15 @@ public class MatchesController : Controller
         }
     }
 
-    // GET /Matches/Edit/5
     public async Task<IActionResult> Edit(int id)
     {
         var dto = await _matchService.GetForEditAsync(id);
         if (dto is null) return NotFound();
 
-        await LoadTeamsAsync(); // the form needs the dropdowns too
+        await LoadTeamsAsync(); 
         return View(dto);
     }
 
-    // POST /Matches/Edit
     [HttpPost, ValidateAntiForgeryToken]
     public async Task<IActionResult> Edit(MatchFormDto dto)
     {
@@ -90,7 +87,7 @@ public class MatchesController : Controller
             TempData["Success"] = "Partido actualizado correctamente.";
             return RedirectToAction(nameof(Index));
         }
-        catch (InvalidOperationException ex)      // business rule violated
+        catch (InvalidOperationException ex)
         {
             ModelState.AddModelError(string.Empty, ex.Message);
             await LoadTeamsAsync();
@@ -98,7 +95,6 @@ public class MatchesController : Controller
         }
     }
 
-    // POST /Matches/Deactivate/5
     [HttpPost, ValidateAntiForgeryToken]
     public async Task<IActionResult> Deactivate(int id)
     {
@@ -112,5 +108,4 @@ public class MatchesController : Controller
         var teams = await _teamService.GetAllAsync();
         ViewBag.Teams = new SelectList(teams, "Id", "Name");
     }
-
 }
