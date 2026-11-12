@@ -1,6 +1,7 @@
 ﻿// GolBet.Repositories/Interfaces/IBetRepository.cs
 using GolBet.Entities;
 using GolBet.Entities.Enums;
+using System.Diagnostics;
 
 namespace GolBet.Repositories.Interfaces;
 
@@ -11,4 +12,9 @@ public interface IBetRepository : IGenericRepository<Bet>
 
     /// <summary>All bets of a user, newest first, with match and teams loaded.</summary>
     Task<IEnumerable<Bet>> GetByUserAsync(string userId);
+
+    // GolBet.Repositories/Interfaces/IBetRepository.cs  (agregar)
+    /// <summary>Pending bets of a match, TRACKED and with their users loaded</summary>
+     Task<List<Bet>> GetPendingByMatchAsync(int matchId);
+
 }
